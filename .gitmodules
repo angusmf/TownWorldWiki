@@ -1,0 +1,3 @@
+[submodule "Assets/Plugins"]
+	path = Assets/Plugins
+	url = https://github.com/angusmf/Markdown-Renderer-For-UIWidgets
