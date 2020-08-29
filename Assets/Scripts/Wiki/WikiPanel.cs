@@ -37,13 +37,13 @@ namespace UIWidgetsWiki
 
         protected override void Awake()
         {
-            LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"), RootName);
             PanelConfig config = GetComponent<PanelConfig>();
             if (config != null)
             {
                 Title = config.Title;
                 RootName = config.RootName;
             }
+            LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"), RootName); 
         }
 
         private void HandleTap(string url)
@@ -58,19 +58,16 @@ namespace UIWidgetsWiki
 
             string currentDirectory = Path.Combine(m_currentDirectory, Path.GetDirectoryName(url));
 
-            string path = Path.Combine(currentDirectory, Path.GetFileName(url));
-            Debug.LogFormat("url ={0} - path = {1} - Path.GetDirectoryName(url) = {2} - Path.GetFileName(url) = {3} - m_appBarTitle = {4} - currentDirectory = {5}",
-                url, path, Path.GetDirectoryName(url), Path.GetFileName(url), m_appBarTitle, currentDirectory);
-
-            if (File.Exists(path))
+            if (File.Exists(Path.Combine(currentDirectory, Path.GetFileName(url))))
             {
                 PushCurrentPageToHistory();
-                LoadPage(currentDirectory, Path.GetFileNameWithoutExtension(url));
-                recreateWidget();
+                ReloadPage(currentDirectory, Path.GetFileNameWithoutExtension(url));
             }
             else
             {
-                Debug.LogWarningFormat("couldn't find file at path {0}", path);
+                Debug.LogWarningFormat("couldn't find file at path {0} (url = {1})",
+                    Path.Combine(currentDirectory, Path.GetFileName(url)),
+                    url);
                 //TODO user notifcation of missing file
                 //TODO user add new file
             }
@@ -78,13 +75,17 @@ namespace UIWidgetsWiki
             return true;
         }
 
+        void ReloadPage(string path, string file)
+        {
+            LoadPage(path, file);
+            recreateWidget();
+        }
+
         private void LoadPage(string path, string file)
         {
             if (File.Exists(Path.Combine(path, file + MARKDOWN__FILE_EXTENSION)))
             {
-                //markdownData1 = File.ReadAllText(Path.Combine(path, file));
-                markdownData1 = File.ReadLines(Path.Combine(path, file + MARKDOWN__FILE_EXTENSION)).Where(line => !line.StartsWith("![]"))
-                    .Aggregate(string.Empty, (data, line) => data += line + '\n', data => data);
+                markdownData1 = File.ReadAllText(Path.Combine(path, file + MARKDOWN__FILE_EXTENSION)).Replace("![](./", "![](");
 
                 m_currentDirectory = path;
                 m_appBarTitle = file;
@@ -142,7 +143,8 @@ namespace UIWidgetsWiki
                     //body
                     body: new Markdown(data: markdownData1,
                       syntaxHighlighter: new DartSyntaxHighlighter(SyntaxHighlighterStyle.lightThemeStyle()),
-                      onTapLink: HandleTap),
+                      onTapLink: HandleTap,
+                      imageDirectory: m_currentDirectory),
 
                     //footer
                     persistentFooterButtons: new List<Widget>()
@@ -152,8 +154,7 @@ namespace UIWidgetsWiki
                             label: new Text("^ HOME", style: new TextStyle(true, new Unity.UIWidgets.ui.Color(0xFF000000))),
                             onPressed: () => {
                                 PushCurrentPageToHistory();
-                                LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"),  RootName);
-                                recreateWidget();
+                                ReloadPage(Path.Combine(Application.streamingAssetsPath, "markdown"),  RootName);
                             }),
                         RaisedButton.icon(
                             icon: new Icon(Icons.arrow_back, size: 18.0f, color: new Unity.UIWidgets.ui.Color(0xFFFFFFFF)),
@@ -162,8 +163,7 @@ namespace UIWidgetsWiki
                                 if (m_navHistory.Count > 0)
                                 {
                                     NavigationState navigationState = m_navHistory.Pop();
-                                    LoadPage(navigationState.directory, navigationState.page);
-                                    recreateWidget();
+                                    ReloadPage(navigationState.directory, navigationState.page);
                                 }
                             }),
                     }));
