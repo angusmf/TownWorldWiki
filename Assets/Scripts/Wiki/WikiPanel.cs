@@ -9,7 +9,6 @@ using Unity.UIWidgets.painting;
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace UIWidgetsWiki
@@ -35,14 +34,13 @@ namespace UIWidgetsWiki
         private string markdownData1;
         private string m_currentDirectory;
 
+        private PanelConfig m_config;
+
         protected override void Awake()
         {
-            PanelConfig config = GetComponent<PanelConfig>();
-            if (config != null)
-            {
-                Title = config.Title;
-                RootName = config.RootName;
-            }
+            if (m_config == null) m_config = GetComponent<PanelConfig>();
+            Title = m_config?.Title;
+            RootName = m_config?.RootName;
             LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"), RootName); 
         }
 
@@ -104,16 +102,9 @@ namespace UIWidgetsWiki
 
         protected override void OnEnable()
         {
-            // if you want to use your own font or font icons.   
-            // FontManager.instance.addFont(Resources.Load<Font>(path: "path to your font"), "font family name");
-
-            // load custom font with weight & style. The font weight & style corresponds to fontWeight, fontStyle of 
-            // a TextStyle object
-            // FontManager.instance.addFont(Resources.Load<Font>(path: "path to your font"), "Roboto", FontWeight.w500, 
-            //    FontStyle.italic);
-
-            // add material icons, familyName must be "Material Icons"
-            // FontManager.instance.addFont(Resources.Load<Font>(path: "path to material icons"), "Material Icons");
+            if (m_config == null)
+                m_config = GetComponent<PanelConfig>();
+            m_config?.LoadFonts();
 
             base.OnEnable();
         }
@@ -150,15 +141,16 @@ namespace UIWidgetsWiki
                     persistentFooterButtons: new List<Widget>()
                     {
                         RaisedButton.icon(
-                            icon: new Icon(Icons.home, size: 18.0f, color: new Unity.UIWidgets.ui.Color(0xFFFFFFFF)),
-                            label: new Text("^ HOME", style: new TextStyle(true, new Unity.UIWidgets.ui.Color(0xFF000000))),
+                            icon: new Icon(Icons.home, size: 18.0f, color: Colors.white),
+                            label: new Text("HOME", style: new TextStyle(true, color: Colors.white)),
                             onPressed: () => {
                                 PushCurrentPageToHistory();
                                 ReloadPage(Path.Combine(Application.streamingAssetsPath, "markdown"),  RootName);
                             }),
+                   
                         RaisedButton.icon(
-                            icon: new Icon(Icons.arrow_back, size: 18.0f, color: new Unity.UIWidgets.ui.Color(0xFFFFFFFF)),
-                            label: new Text("< BACK", style: new TextStyle(true, new Unity.UIWidgets.ui.Color(0xFF000000))),
+                            icon: new Icon(Icons.arrow_back, size: 18.0f, color: Colors.white),
+                            label: new Text("BACK", style: new TextStyle(true, color: Colors.white)),
                             onPressed: () => {
                                 if (m_navHistory.Count > 0)
                                 {
