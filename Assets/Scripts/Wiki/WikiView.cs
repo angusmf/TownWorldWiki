@@ -20,7 +20,7 @@ namespace UIWidgetsWiki
         public string directory;
     }
 
-    public class WikiPanel : UIWidgetsPanel
+    public class WikiView : UIWidgetsPanel
     {
 
         string Title = "Town World Wiki";
@@ -158,6 +158,13 @@ namespace UIWidgetsWiki
                                     ReloadPage(navigationState.directory, navigationState.page);
                                 }
                             }),
+
+
+                        RaisedButton.icon(
+                            icon: new Icon(Icons.power, size: 18.0f, color: Colors.white),
+                            label: new Text("QUIT", style: new TextStyle(true, color: Colors.white)),
+                            onPressed: () => Application.Quit()),
+
                     }));
         }
     }
