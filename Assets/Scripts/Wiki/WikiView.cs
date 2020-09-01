@@ -30,9 +30,9 @@ namespace UIWidgetsWiki
 
         private Stack<NavigationState> m_navHistory = new Stack<NavigationState>();
 
-        private string m_appBarTitle;
-        private string markdownData1;
-        private string m_currentDirectory;
+        private string m_appBarTitle = string.Empty;
+        private string markdownData1 = "no data";
+        private string m_currentDirectory = string.Empty;
 
         private PanelConfig m_config;
 
@@ -81,6 +81,7 @@ namespace UIWidgetsWiki
 
         private void LoadPage(string path, string file)
         {
+            if (!Application.isPlaying) return;
             if (File.Exists(Path.Combine(path, file + MARKDOWN__FILE_EXTENSION)))
             {
                 markdownData1 = File.ReadAllText(Path.Combine(path, file + MARKDOWN__FILE_EXTENSION)).Replace("![](./", "![](");

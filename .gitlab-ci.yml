@@ -1,0 +1,124 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  CACHE_ADDRESS: 192.168.1.132:8126
+   
+build:winmono:
+  stage: build
+  tags:
+   - dedicated
+  image: angusmf/unity-build:2020.1.3f1-winmono
+  variables:
+    BUILD_PLATFORM: winmono
+    BUILD_SPEC: client
+  script:
+  - mkdir output
+  - mkdir build_log
+  - cp lic/Unity_lic.ulf /root/.local/share/unity3d/Unity/Unity_lic.ulf
+  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
+  artifacts:
+    expire_in: 60 days
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - output
+    - build_log
+  only:
+  - build_err2
+  - master
+  - tags
+  
+  
+build:linux:
+  stage: build
+  tags:
+  - dedicated
+  image: angusmf/unity-build:2020.1.3f1-linux
+  variables:
+    BUILD_PLATFORM: linux
+    BUILD_SPEC: all
+  script:
+  - mkdir output
+  - mkdir build_log
+  - cp lic/Unity_lic.ulf /root/.local/share/unity3d/Unity/Unity_lic.ulf
+  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
+  artifacts:
+    expire_in: 60 days
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - output
+  only:
+  - no_build
+
+ 
+build:webgl:
+  stage: build
+  tags:
+  - dedicated
+  image: angusmf/unity-build:2020.1.3f1-webgl
+  variables:
+    BUILD_PLATFORM: webgl
+    BUILD_SPEC: client
+  script:
+  - mkdir output
+  - mkdir build_log
+  - cp lic/Unity_lic.ulf /root/.local/share/unity3d/Unity/Unity_lic.ulf
+  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
+  - mkdir public
+  - mv output/WebGL/Client/Caris-WorldClient/* public
+  artifacts:
+    expire_in: 60 days
+    name: "$CI_JOB_NAME"
+    when: always
+    paths:
+    - public
+    - build_log
+  only:
+  - webgl_stage
+  
+deploy:linux:
+  stage: deploy
+  image: ubuntu
+  dependencies:
+  - build:linux
+  environment:
+    name: linode
+  tags:
+  - dedicated
+  script:
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client rsync -y )'
+  - eval $(ssh-agent -s)
+  - echo "$BG_DEPLOY_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan $DEPLOY_TARGET >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+  - ssh carisworld@$DEPLOY_TARGET 'bash -s' < output/Linux/start_scripts/stopservers.sh
+  - rsync -avuz output/Linux/GameServer carisworld@$DEPLOY_TARGET:/home/carisworld
+  - rsync -avuz output/Linux/MasterAndSpawner carisworld@$DEPLOY_TARGET:/home/carisworld
+  - rsync -avuz output/Linux/start_scripts carisworld@$DEPLOY_TARGET:/home/carisworld
+  - ssh carisworld@$DEPLOY_TARGET 'bash start_scripts/setexec.sh'
+  - ssh carisworld@$DEPLOY_TARGET 'bash start_scripts/startmaster.sh'
+  - echo after startmaster.sh
+  only:
+  - no_build
+ 
+  
+pages:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+  - build:webgl
+  environment:
+    name: webgl
+    url: https://cw.buildygoat.com
+  tags:
+   - dedicated
+  script:
+    - echo "Nothing to do!"
+  artifacts:
+    paths:
+     - public
+  only:
+  - no_build
+ 
