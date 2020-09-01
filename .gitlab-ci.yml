@@ -23,7 +23,7 @@ build:winmono:
     - output
     - build_log
   only:
-  - build_err2
+  - test-ci
   - master
   - tags
   
