@@ -13,7 +13,7 @@ build:winmono:
   stage: build
   tags:
    - dedicated
-  image: angusmf/unity-build:2020.1.3f1-winmono
+  image: angusmf/unity-build:2020.1.4f1-winmono
   variables:
     BUILD_PLATFORM: winmono
     BUILD_SPEC: client
@@ -39,7 +39,7 @@ build:linux:
   stage: build
   tags:
   - dedicated
-  image: angusmf/unity-build:2020.1.3f1-linux
+  image: angusmf/unity-build:2020.1.4f1-linux
   variables:
     BUILD_PLATFORM: linux
     BUILD_SPEC: all
@@ -62,7 +62,7 @@ build:webgl:
   stage: build
   tags:
   - dedicated
-  image: angusmf/unity-build:2020.1.3f1-webgl
+  image: angusmf/unity-build:2020.1.4f1-webgl
   variables:
     BUILD_PLATFORM: webgl
     BUILD_SPEC: client
