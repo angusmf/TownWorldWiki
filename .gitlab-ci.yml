@@ -1,6 +1,13 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CACHE_ADDRESS: 192.168.1.132:8126
+  
+download:
+  stage: build
+  only:
+    - triggers
+  script:
+    - "curl -O --header 'PRIVATE-TOKEN: ${GITLAB_API_TOKEN}' https://gitlab.example.com/api/v4/projects/town-world-zim/jobs/${REMOTE_JOB_ID}/artifacts/markdown"
    
 build:winmono:
   stage: build
