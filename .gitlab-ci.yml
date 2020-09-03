@@ -69,7 +69,7 @@ build:webgl:
   script:
   - mkdir output
   - mkdir build_log
-  - cp lic/Unity_lic.ulf /root/.local/share/unity3d/Unity/Unity_lic.ulf
+  - cp lic/Unity_v2020.x.ulf /root/.local/share/unity3d/Unity/Unity_v2020.x.ulf
   - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
   - mkdir public
   - mv output/WebGL/Client/Caris-WorldClient/* public
