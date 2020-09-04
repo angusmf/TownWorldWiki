@@ -23,6 +23,8 @@ variables:
 # run this job when you need to request a license
 # you may need to follow activation steps from documentation
 get-activation-file:
+  tags:
+    - dedicated
   when: manual
   stage: build_and_test
   script:
@@ -45,18 +47,22 @@ get-activation-file:
   # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
   # you may need to remove or replace these to fit your need if you are using your own runners
   tags:
-    - gitlab-org
+    - dedicated
   coverage: /<Linecoverage>(.*?)</Linecoverage>/
 
 test-playmode:
   <<: *test
   variables:
     TEST_PLATFORM: playmode
+  tags:
+    - dedicated    
 
 test-editmode:
   <<: *test
   variables:
     TEST_PLATFORM: editmode
+  tags:
+    - dedicated    
 
 .build: &build
   stage: build_and_test
@@ -70,12 +76,14 @@ test-editmode:
   # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
   # you may need to remove or replace these to fit your need if you are using your own runners
   tags:
-    - gitlab-org
+    - dedicated
 
 build-StandaloneLinux64:
   <<: *build
   variables:
     BUILD_TARGET: StandaloneLinux64
+  tags:
+    - dedicated
 
 build-StandaloneLinux64-il2cpp:
   <<: *build
@@ -85,12 +93,16 @@ build-StandaloneLinux64-il2cpp:
     SCRIPTING_BACKEND: IL2CPP
     # https://forum.unity.com/threads/linux-il2cpp-linux-sysroot-not-specified-or-does-not-exist.854008/
     IL2CPP_ADDITIONAL_ARGS: "--sysroot-path=/ --tool-chain-path=/"
+  tags:
+    - dedicated    
 
 build-StandaloneOSX:
   <<: *build
   image: gableroux/unity3d:2020.1.3f1-mac
   variables:
     BUILD_TARGET: StandaloneOSX
+  tags:
+    - dedicated    
 
 #Note: build target names changed in recent versions, use this for versions < 2017.2:
 # build-StandaloneOSXUniversal:
@@ -103,12 +115,16 @@ build-StandaloneWindows64:
   image: gableroux/unity3d:2020.1.3f1-windows
   variables:
     BUILD_TARGET: StandaloneWindows64
+  tags:
+    - dedicated    
 
 build-WebGL:
   <<: *build
   image: gableroux/unity3d:2020.1.3f1-webgl
   variables:
     BUILD_TARGET: WebGL
+  tags:
+    - dedicated    
 
 build-android:
   <<: *build
@@ -117,6 +133,8 @@ build-android:
     BUILD_TARGET: Android
     BUNDLE_VERSION_CODE: $CI_PIPELINE_IID
     BUILD_APP_BUNDLE: "false"
+  tags:
+    - dedicated    
 
 #deploy-android:
 #  stage: deploy
@@ -134,6 +152,8 @@ build-ios-xcode:
   image: gableroux/unity3d:2020.1.3f1-ios
   variables:
     BUILD_TARGET: iOS
+  tags:
+    - dedicated    
 
 #build-and-deploy-ios:
 #  stage: deploy
@@ -156,3 +176,5 @@ pages:
       - public
   only:
     - master
+  tags:
+    - dedicated
