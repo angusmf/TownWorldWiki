@@ -1,4 +1,4 @@
-image: gableroux/unity3d:2020.1.3f1
+image: gableroux/unity3d:2020.1.4f1
 
 stages:
   - build_and_test
@@ -87,7 +87,7 @@ build-StandaloneLinux64:
 
 build-StandaloneLinux64-il2cpp:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-linux-il2cpp
+  image: gableroux/unity3d:2020.1.4f1-linux-il2cpp
   variables:
     BUILD_TARGET: StandaloneLinux64
     SCRIPTING_BACKEND: IL2CPP
@@ -98,7 +98,7 @@ build-StandaloneLinux64-il2cpp:
 
 build-StandaloneOSX:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-mac
+  image: gableroux/unity3d:2020.1.4f1-mac
   variables:
     BUILD_TARGET: StandaloneOSX
   tags:
@@ -112,7 +112,7 @@ build-StandaloneOSX:
 
 build-StandaloneWindows64:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-windows
+  image: gableroux/unity3d:2020.1.4f1-windows
   variables:
     BUILD_TARGET: StandaloneWindows64
   tags:
@@ -120,7 +120,7 @@ build-StandaloneWindows64:
 
 build-WebGL:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-webgl
+  image: gableroux/unity3d:2020.1.4f1-webgl
   variables:
     BUILD_TARGET: WebGL
   tags:
@@ -128,7 +128,7 @@ build-WebGL:
 
 build-android:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-android
+  image: gableroux/unity3d:2020.1.4f1-android
   variables:
     BUILD_TARGET: Android
     BUNDLE_VERSION_CODE: $CI_PIPELINE_IID
@@ -149,7 +149,7 @@ build-android:
 
 build-ios-xcode:
   <<: *build
-  image: gableroux/unity3d:2020.1.3f1-ios
+  image: gableroux/unity3d:2020.1.4f1-ios
   variables:
     BUILD_TARGET: iOS
   tags:
