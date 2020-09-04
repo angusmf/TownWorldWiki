@@ -53,17 +53,17 @@ get-activation-file:
 test-playmode:
   <<: *test
   variables:
-    TEST_PLATFORM: playmode
-  tags:
-    - dedicated    
-
+    TEST_PLATFORM: playmode  
+  only:
+    - never
+    
 test-editmode:
   <<: *test
   variables:
-    TEST_PLATFORM: editmode
-  tags:
-    - dedicated    
-
+    TEST_PLATFORM: editmode  
+  only:
+    - never
+    
 .build: &build
   stage: build_and_test
   <<: *unity_before_script
@@ -92,18 +92,16 @@ build-StandaloneLinux64-il2cpp:
     BUILD_TARGET: StandaloneLinux64
     SCRIPTING_BACKEND: IL2CPP
     # https://forum.unity.com/threads/linux-il2cpp-linux-sysroot-not-specified-or-does-not-exist.854008/
-    IL2CPP_ADDITIONAL_ARGS: "--sysroot-path=/ --tool-chain-path=/"
-  tags:
-    - dedicated    
+    IL2CPP_ADDITIONAL_ARGS: "--sysroot-path=/ --tool-chain-path=/"  
 
 build-StandaloneOSX:
   <<: *build
   image: gableroux/unity3d:2020.1.4f1-mac
   variables:
-    BUILD_TARGET: StandaloneOSX
-  tags:
-    - dedicated    
-
+    BUILD_TARGET: StandaloneOSX  
+  only:
+    - never
+    
 #Note: build target names changed in recent versions, use this for versions < 2017.2:
 # build-StandaloneOSXUniversal:
 #   <<: *build
@@ -114,17 +112,13 @@ build-StandaloneWindows64:
   <<: *build
   image: gableroux/unity3d:2020.1.4f1-windows
   variables:
-    BUILD_TARGET: StandaloneWindows64
-  tags:
-    - dedicated    
+    BUILD_TARGET: StandaloneWindows64 
 
 build-WebGL:
   <<: *build
   image: gableroux/unity3d:2020.1.4f1-webgl
   variables:
-    BUILD_TARGET: WebGL
-  tags:
-    - dedicated    
+    BUILD_TARGET: WebGL  
 
 build-android:
   <<: *build
@@ -132,10 +126,10 @@ build-android:
   variables:
     BUILD_TARGET: Android
     BUNDLE_VERSION_CODE: $CI_PIPELINE_IID
-    BUILD_APP_BUNDLE: "false"
-  tags:
-    - dedicated    
-
+    BUILD_APP_BUNDLE: "false"  
+  only:
+    - never
+    
 #deploy-android:
 #  stage: deploy
 #  image: ruby
@@ -151,10 +145,10 @@ build-ios-xcode:
   <<: *build
   image: gableroux/unity3d:2020.1.4f1-ios
   variables:
-    BUILD_TARGET: iOS
-  tags:
-    - dedicated    
-
+    BUILD_TARGET: iOS  
+  only:
+    - never
+    
 #build-and-deploy-ios:
 #  stage: deploy
 #  script:
@@ -175,6 +169,6 @@ pages:
     paths:
       - public
   only:
-    - master
+    - never
   tags:
     - dedicated
