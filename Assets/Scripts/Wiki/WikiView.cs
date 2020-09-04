@@ -33,7 +33,7 @@ namespace UIWidgetsWiki
         private string m_appBarTitle = string.Empty;
         private string markdownData1 = "no data";
         private string m_currentDirectory = string.Empty;
-
+        private MarkdownStyleSheet m_markdownStyleSheet;
         private PanelConfig m_config;
 
         protected override void Awake()
@@ -41,8 +41,27 @@ namespace UIWidgetsWiki
             if (m_config == null) m_config = GetComponent<PanelConfig>();
             Title = m_config?.Title;
             RootName = m_config?.RootName;
-            LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"), RootName); 
+            LoadPage(Path.Combine(Application.streamingAssetsPath, "markdown"), RootName);
+            m_markdownStyleSheet = MarkdownStyleSheet.fromTheme(new ThemeData(textTheme:
+                new TextTheme(
+
+                    display4:   new TextStyle(fontSize: 70.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h1
+                    display3:   new TextStyle(fontSize: 60.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h2
+                    display2:   new TextStyle(fontSize: 50.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h3
+                    display1:   new TextStyle(fontSize: 40.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h4
+                    headline:   new TextStyle(fontSize: 30.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h5
+                    title:      new TextStyle(fontSize: 20.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h6
+
+                    body1:      new TextStyle(fontSize: 16.0f)
+                    //            caption: new TextStyle(color: Colors.pink, fontSize: 8.0f),
+                    //            button: new TextStyle(color: Colors.purple, fontSize: 8.0f),
+                    //            overline: new TextStyle(color: Colors.red, fontSize: 8.0f)
+
+                    )));
+                    
+        
         }
+        
 
         private void HandleTap(string url)
         {
@@ -125,18 +144,21 @@ namespace UIWidgetsWiki
 
         protected override Widget createWidget()
         {
+            if (!Application.isPlaying) return null;
+
             return new MaterialApp(
                 title: Title,
                 home: new Scaffold(
-                    
+
                     //app bar
                     appBar: new AppBar(title: new Text(m_appBarTitle.Replace('_', ' '))),
 
                     //body
                     body: new Markdown(data: markdownData1,
-                      syntaxHighlighter: new DartSyntaxHighlighter(SyntaxHighlighterStyle.lightThemeStyle()),
-                      onTapLink: HandleTap,
-                      imageDirectory: m_currentDirectory),
+                    syntaxHighlighter: new DartSyntaxHighlighter(SyntaxHighlighterStyle.lightThemeStyle()),
+                    onTapLink: HandleTap,
+                    imageDirectory: m_currentDirectory,
+                    styleSheet: m_markdownStyleSheet),
 
                     //footer
                     persistentFooterButtons: new List<Widget>()
