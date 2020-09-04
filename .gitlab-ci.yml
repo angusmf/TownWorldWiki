@@ -1,131 +1,158 @@
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  CACHE_ADDRESS: 192.168.1.132:8126
-  
-download:
-  stage: build
-  only:
-    - triggers
-  script:
-    - "curl -O --header 'PRIVATE-TOKEN: ${GITLAB_API_TOKEN}' https://gitlab.example.com/api/v4/projects/town-world-zim/jobs/${REMOTE_JOB_ID}/artifacts/markdown"
-   
-build:winmono:
-  stage: build
-  tags:
-   - dedicated
-  image: angusmf/unity-build:2020.1.4f1-winmono
-  variables:
-    BUILD_PLATFORM: winmono
-    BUILD_SPEC: client
-  script:
-  - mkdir output
-  - mkdir build_log
-  - cp lic/Unity_v2020.x.ulf /root/.local/share/unity3d/Unity/Unity_v2020.x.ulf
-  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
-  artifacts:
-    expire_in: 60 days
-    name: "$CI_JOB_NAME"
-    when: always
-    paths:
-    - output
-    - build_log
-  only:
-  - test-ci
-  - master
-  - tags
-  
-  
-build:linux:
-  stage: build
-  tags:
-  - dedicated
-  image: angusmf/unity-build:2020.1.4f1-linux
-  variables:
-    BUILD_PLATFORM: linux
-    BUILD_SPEC: all
-  script:
-  - mkdir output
-  - mkdir build_log
-  - cp lic/Unity_v2020.x.ulf /root/.local/share/unity3d/Unity/Unity_v2020.x.ulf
-  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
-  artifacts:
-    expire_in: 60 days
-    name: "$CI_JOB_NAME"
-    when: always
-    paths:
-    - output
-  only:
-  - no_build
+image: gableroux/unity3d:2020.1.3f1
 
- 
-build:webgl:
-  stage: build
+stages:
+  - build_and_test
+  - deploy
+
+# If you are looking for a place where to add 'UNITY_LICENSE_FILE' and other secrets, please visit your project's gitlab page:
+# settings > CI/CD > Variables instead
+variables:
+  BUILD_NAME: ExampleProjectName
+  UNITY_ACTIVATION_FILE: ./unity3d.alf
+
+.unity_before_script: &unity_before_script
+  before_script:
+    - chmod +x ./ci/before_script.sh && ./ci/before_script.sh
+
+.cache: &cache
+  cache:
+    key: "$CI_PROJECT_NAMESPACE-$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG-$TEST_PLATFORM"
+    paths:
+      - Library/
+
+# run this job when you need to request a license
+# you may need to follow activation steps from documentation
+get-activation-file:
+  when: manual
+  stage: build_and_test
+  script:
+    - chmod +x ./ci/get_activation_file.sh && ./ci/get_activation_file.sh
+  artifacts:
+    paths:
+      - $UNITY_ACTIVATION_FILE
+    expire_in: 10 min # Expiring this as artifacts may contain sensitive data and should not be kept public
+
+.test: &test
+  stage: build_and_test
+  <<: *unity_before_script
+  <<: *cache
+  script:
+    - chmod +x ./ci/test.sh && ./ci/test.sh
+  artifacts:
+    paths:
+      - $(pwd)/$TEST_PLATFORM-results.xml
+      - $(pwd)/$TEST_PLATFORM-coverage/
+  # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
+  # you may need to remove or replace these to fit your need if you are using your own runners
   tags:
-  - dedicated
-  image: angusmf/unity-build:2020.1.4f1-webgl
+    - gitlab-org
+  coverage: /<Linecoverage>(.*?)</Linecoverage>/
+
+test-playmode:
+  <<: *test
   variables:
-    BUILD_PLATFORM: webgl
-    BUILD_SPEC: client
+    TEST_PLATFORM: playmode
+
+test-editmode:
+  <<: *test
+  variables:
+    TEST_PLATFORM: editmode
+
+.build: &build
+  stage: build_and_test
+  <<: *unity_before_script
+  <<: *cache
   script:
-  - mkdir output
-  - mkdir build_log
-  - cp lic/Unity_v2020.x.ulf /root/.local/share/unity3d/Unity/Unity_v2020.x.ulf
-  - xvfb-run -a --server-args="-screen 0 1024x768x24" /opt/Unity/Editor/Unity -batchmode -quit -logFile ./build_log/log.txt -projectPath ./ -executeMethod BuildScripts.Build -buildPath ./output -buildPlatform $BUILD_PLATFORM -buildSpec $BUILD_SPEC
-  - mkdir public
-  - mv output/WebGL/Client/Caris-WorldClient/* public
+    - chmod +x ./ci/build.sh && ./ci/build.sh
   artifacts:
-    expire_in: 60 days
-    name: "$CI_JOB_NAME"
-    when: always
     paths:
-    - public
-    - build_log
-  only:
-  - webgl_stage
-  
-deploy:linux:
-  stage: deploy
-  image: ubuntu
-  dependencies:
-  - build:linux
-  environment:
-    name: linode
+      - ./Builds/
+  # https://gitlab.com/gableroux/unity3d-gitlab-ci-example/-/issues/83
+  # you may need to remove or replace these to fit your need if you are using your own runners
   tags:
-  - dedicated
-  script:
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client rsync -y )'
-  - eval $(ssh-agent -s)
-  - echo "$BG_DEPLOY_KEY" | tr -d '\r' | ssh-add - > /dev/null
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
-  - ssh-keyscan $DEPLOY_TARGET >> ~/.ssh/known_hosts
-  - chmod 644 ~/.ssh/known_hosts
-  - ssh carisworld@$DEPLOY_TARGET 'bash -s' < output/Linux/start_scripts/stopservers.sh
-  - rsync -avuz output/Linux/GameServer carisworld@$DEPLOY_TARGET:/home/carisworld
-  - rsync -avuz output/Linux/MasterAndSpawner carisworld@$DEPLOY_TARGET:/home/carisworld
-  - rsync -avuz output/Linux/start_scripts carisworld@$DEPLOY_TARGET:/home/carisworld
-  - ssh carisworld@$DEPLOY_TARGET 'bash start_scripts/setexec.sh'
-  - ssh carisworld@$DEPLOY_TARGET 'bash start_scripts/startmaster.sh'
-  - echo after startmaster.sh
-  only:
-  - no_build
- 
-  
+    - gitlab-org
+
+build-StandaloneLinux64:
+  <<: *build
+  variables:
+    BUILD_TARGET: StandaloneLinux64
+
+build-StandaloneLinux64-il2cpp:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-linux-il2cpp
+  variables:
+    BUILD_TARGET: StandaloneLinux64
+    SCRIPTING_BACKEND: IL2CPP
+    # https://forum.unity.com/threads/linux-il2cpp-linux-sysroot-not-specified-or-does-not-exist.854008/
+    IL2CPP_ADDITIONAL_ARGS: "--sysroot-path=/ --tool-chain-path=/"
+
+build-StandaloneOSX:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-mac
+  variables:
+    BUILD_TARGET: StandaloneOSX
+
+#Note: build target names changed in recent versions, use this for versions < 2017.2:
+# build-StandaloneOSXUniversal:
+#   <<: *build
+#   variables:
+#     BUILD_TARGET: StandaloneOSXUniversal
+
+build-StandaloneWindows64:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-windows
+  variables:
+    BUILD_TARGET: StandaloneWindows64
+
+build-WebGL:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-webgl
+  variables:
+    BUILD_TARGET: WebGL
+
+build-android:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-android
+  variables:
+    BUILD_TARGET: Android
+    BUNDLE_VERSION_CODE: $CI_PIPELINE_IID
+    BUILD_APP_BUNDLE: "false"
+
+#deploy-android:
+#  stage: deploy
+#  image: ruby
+#  script: 
+#    - cd ./Builds/Android
+#    - echo $GPC_TOKEN > gpc_token.json
+#    - gem install bundler
+#    - bundle install
+#    - fastlane supply --aab $BUILD_NAME.aab --track internal --package_name com.youcompany.yourgame --json_key ./gpc_token.json
+#  needs: ["build-android"]
+
+build-ios-xcode:
+  <<: *build
+  image: gableroux/unity3d:2020.1.3f1-ios
+  variables:
+    BUILD_TARGET: iOS
+
+#build-and-deploy-ios:
+#  stage: deploy
+#  script:
+#    - cd ./Builds/iOS/$BUILD_NAME
+#    - pod install
+#    - fastlane ios beta
+#  tags:
+#    - ios
+#    - mac
+#  needs: ["build-ios-xcode"]
+
 pages:
-  stage: deploy
   image: alpine:latest
-  dependencies:
-  - build:webgl
-  environment:
-    name: webgl
-    url: https://cw.buildygoat.com
-  tags:
-   - dedicated
+  stage: deploy
   script:
-    - echo "Nothing to do!"
+    - mv "./Builds/WebGL/${BUILD_NAME}" public
   artifacts:
     paths:
-     - public
+      - public
   only:
-  - no_build
- 
+    - master
