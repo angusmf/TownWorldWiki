@@ -1,5 +1,5 @@
-[submodule "Assets/Plugins"]
-	path = Assets/Plugins
+[submodule "Assets/UIWidgetsMarkdown"]
+	path = Assets/UIWidgetsMarkdown
 	url = https://github.com/angusmf/Markdown-Renderer-For-UIWidgets
 [submodule "lic"]
 	path = lic
