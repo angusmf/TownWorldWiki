@@ -1,7 +1,7 @@
+image: gableroux/unity3d:2020.1.4f1
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-
-image: gableroux/unity3d:2020.1.4f1
 
 stages:
   - build_and_test
