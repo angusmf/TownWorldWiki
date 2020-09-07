@@ -1,8 +1,5 @@
 image: gableroux/unity3d:2020.1.4f1
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
 stages:
   - build_and_test
   - deploy
@@ -12,6 +9,7 @@ stages:
 variables:
   BUILD_NAME: ExampleProjectName
   UNITY_ACTIVATION_FILE: ./unity3d.alf
+  GIT_SUBMODULE_STRATEGY: recursive
 
 .unity_before_script: &unity_before_script
   before_script:
