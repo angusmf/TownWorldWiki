@@ -7,7 +7,7 @@ stages:
 # If you are looking for a place where to add 'UNITY_LICENSE_FILE' and other secrets, please visit your project's gitlab page:
 # settings > CI/CD > Variables instead
 variables:
-  BUILD_NAME: ExampleProjectName
+  BUILD_NAME: TownWorldWiki
   UNITY_ACTIVATION_FILE: ./unity3d.alf
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -23,17 +23,17 @@ variables:
 
 # run this job when you need to request a license
 # you may need to follow activation steps from documentation
-get-activation-file:
-  tags:
-    - dedicated
-  when: manual
-  stage: build_and_test
-  script:
-    - chmod +x ./ci/get_activation_file.sh && ./ci/get_activation_file.sh
-  artifacts:
-    paths:
-      - $UNITY_ACTIVATION_FILE
-    expire_in: 10 min # Expiring this as artifacts may contain sensitive data and should not be kept public
+#get-activation-file:
+#  tags:
+#    - dedicated
+#  when: manual
+#  stage: build_and_test
+#  script:
+#    - chmod +x ./ci/get_activation_file.sh && ./ci/get_activation_file.sh
+#  artifacts:
+#    paths:
+#      - $UNITY_ACTIVATION_FILE
+#    expire_in: 10 min # Expiring this as artifacts may contain sensitive data and should not be kept public
 
 .test: &test
   stage: build_and_test
