@@ -17,10 +17,8 @@ using Cysharp.Threading.Tasks;
 
 namespace UIWidgetsWiki
 {
-    public class WikiView : UIWidgetsPanel
+    public class WikiView2 : UIWidgetsPanel
     {
-        public bool live;
-
         string Title = "Town World Wiki";
 
         private const string MARKDOWN__FILE_EXTENSION = ".markdown";
@@ -30,50 +28,49 @@ namespace UIWidgetsWiki
 
         private string m_appBarTitle = string.Empty;
         private string markdownData1 = NO_DATA;
-        private string m_currentPath = string.Empty;
+        private Uri m_currentPath;
         private MarkdownStyleSheet m_markdownStyleSheet;
+        private ThemeData m_appTheme;
         private PanelConfig m_config;
         private HashSet<string> m_PathExists = new HashSet<string>();
 
         protected override void Awake()
         {
+
             if (m_config == null) m_config = GetComponent<PanelConfig>();
             Title = m_config?.Title;
-            m_currentPath = Path.Combine(Application.streamingAssetsPath, "markdown/Town_World" + MARKDOWN__FILE_EXTENSION);
-            m_markdownStyleSheet = MarkdownStyleSheet.fromTheme(new ThemeData(textTheme:
-    new TextTheme(
-        display4: new TextStyle(fontSize: 40.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h1
-        display3: new TextStyle(fontSize: 36.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h2
-        display2: new TextStyle(fontSize: 32.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h3
-        display1: new TextStyle(fontSize: 28.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h4
-        headline: new TextStyle(fontSize: 24.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h5
-        title: new TextStyle(fontSize: 20.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h6
-        body1: new TextStyle(fontSize: 16.0f)
+            m_currentPath = new Uri(new Uri("https://twzwiki.angusmf.com"), "/Town_World" + MARKDOWN__FILE_EXTENSION);
+
+            m_markdownStyleSheet = MarkdownStyleSheet.fromTheme(
+                new ThemeData(textTheme: new TextTheme(
+                    display4: new TextStyle(fontSize: 40.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h1
+                    display3: new TextStyle(fontSize: 36.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h2
+                    display2: new TextStyle(fontSize: 32.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h3
+                    display1: new TextStyle(fontSize: 28.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h4
+                    headline: new TextStyle(fontSize: 24.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h5
+                    title: new TextStyle(fontSize: 20.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h6
+                    body1: new TextStyle(fontSize: 16.0f)
         //            caption: new TextStyle(color: Colors.pink, fontSize: 8.0f),
         //            button: new TextStyle(color: Colors.purple, fontSize: 8.0f),
         //            overline: new TextStyle(color: Colors.red, fontSize: 8.0f)
-        )));
+            )));
 
-            LoadPage(m_currentPath);
+            //m_appTheme = new ThemeData
         }
-
-        
 
         private async void HandleTap(string url)
         {
-            if (!HandleInternalLink(url))
-                HandleExternalLink(url);  
+            if (!await HandleInternalLink(url))
+                HandleExternalLink(url);
         }
 
-        private bool HandleInternalLink(string url)
+        private async UniTask<bool> HandleInternalLink(string url)
         {
             if (!url.StartsWith("./") && !url.StartsWith("..")) return false;
 
-            if (!NavigateTo(url))
-            { 
-            Debug.LogWarningFormat("HandleInternalLink couldn't find file at path {0} (url = {1})",
-                    Path.Combine(Path.GetDirectoryName(m_currentPath), Path.GetDirectoryName(url)),
-                    url);
+            if (!await NavigateTo(url))
+            {
+                Debug.LogWarningFormat("HandleInternalLink couldn't find markdown at path {0}", url);
                 //TODO user notifcation of missing file
                 //TODO user add new file
             }
@@ -81,9 +78,9 @@ namespace UIWidgetsWiki
             return true;
         }
 
-        bool ReloadPage(string path)
+        async UniTask<bool> ReloadPage(string path)
         {
-            if (LoadPage(path))
+            if (await LoadPageAsync(path))
             {
                 recreateWidget();
                 return true;
@@ -94,23 +91,20 @@ namespace UIWidgetsWiki
             }
         }
 
-        private string loadPath;
+        private Uri loadPath;
 
-        private bool LoadPage(string path)
+        private async UniTask<bool> LoadPageAsync(string path)
         {
             if (!Application.isPlaying) return false;
 
-            loadPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(m_currentPath), path));
-            Debug.LogFormat("loadPath after GetFullPath = {0}", loadPath);
+            loadPath = new Uri(m_currentPath, path);
+            markdownData1 = (await UnityWebRequest.Get(loadPath).SendWebRequest()).downloadHandler.text;
 
-
-            if (File.Exists(loadPath))
+            if (markdownData1 != null)
             {
-                markdownData1 = File.ReadAllText(loadPath).Replace("![](./", "![](");
-
-                if (!m_PathExists.Contains(loadPath)) m_PathExists.Add(loadPath);
+                if (!m_PathExists.Contains(loadPath.AbsolutePath)) m_PathExists.Add(loadPath.AbsolutePath);
                 m_currentPath = loadPath;
-                SetAppBarTitle(loadPath.Replace(Path.Combine(Application.streamingAssetsPath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar), "markdown"), string.Empty));
+                SetAppBarTitle(loadPath.AbsolutePath);
                 return true;
             }
             else
@@ -150,9 +144,9 @@ namespace UIWidgetsWiki
 
         private bool PushCurrentPageToHistory()
         {
-            if (m_PathExists.Contains(Path.GetFullPath(lastPath)))
+            if (m_PathExists.Contains(lastPath.AbsolutePath))
             {
-                m_navHistory.Push(lastPath);
+                m_navHistory.Push(lastPath.AbsolutePath);
                 return true;
             }
             else
@@ -163,16 +157,13 @@ namespace UIWidgetsWiki
             }
         }
 
-        private string lastPath;
-        private int count;
+        private Uri lastPath;
 
-        private bool NavigateTo(string path)
+        private async UniTask<bool> NavigateTo(string path)
         {
-            Debug.LogFormat("current path = {0}, new path = {1}", m_currentPath, path);
-
             lastPath = m_currentPath;
 
-            if (ReloadPage(path))
+            if (await ReloadPage(path))
             {
                 return PushCurrentPageToHistory();
             }
@@ -183,24 +174,24 @@ namespace UIWidgetsWiki
         {
             if (m_navHistory.Count > 0)
             {
-                ReloadPage(m_navHistory.Pop());
+                await ReloadPage(m_navHistory.Pop());
             }
         }
 
-        void Home()
+        async void Home()
         {
-            NavigateTo(Path.Combine(Application.streamingAssetsPath, "markdown/Town_World" + MARKDOWN__FILE_EXTENSION));
+            await NavigateTo(new Uri(m_currentPath, "/Town_World" + MARKDOWN__FILE_EXTENSION).ToString());
         }
 
         protected override Widget createWidget()
         {
             if (!Application.isPlaying) return null;
 
-            //if (markdownData1 == NO_DATA)
-            //{
-            //    NavigateTo(Path.Combine(Application.streamingAssetsPath, "markdown/Town_World" + MARKDOWN__FILE_EXTENSION));
-            //    return null;
-            //}
+            if (markdownData1 == NO_DATA)
+            {
+                NavigateTo(m_currentPath.ToString());
+                return null;
+            }
 
             return new MaterialApp(
                 title: Title,
@@ -213,7 +204,7 @@ namespace UIWidgetsWiki
                     body: new Markdown(data: markdownData1,
                     syntaxHighlighter: new DartSyntaxHighlighter(SyntaxHighlighterStyle.lightThemeStyle()),
                     onTapLink: HandleTap,
-                    imageDirectory: Path.GetDirectoryName(m_currentPath),
+                    imageDirectory: "https://twzwiki.angusmf.com",
                     styleSheet: m_markdownStyleSheet),
 
                     //footer
