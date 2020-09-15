@@ -423,7 +423,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1398879123}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a52dc211497ca5d47850ccb13360a939, type: 3}
+  m_Script: {fileID: 11500000, guid: be923e15a12862640ae615d7b0d72922, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
@@ -443,6 +443,7 @@ MonoBehaviour:
     height: 1
   devicePixelRatioOverride: 0
   hardwareAntiAliasing: 0
+  live: 0
 --- !u!114 &1398879126
 MonoBehaviour:
   m_ObjectHideFlags: 0
