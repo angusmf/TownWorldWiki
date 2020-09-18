@@ -21,8 +21,6 @@ namespace UIWidgetsWiki
     {
         public bool live;
 
-        string Title = "Town World Wiki";
-
         private const string MARKDOWN__FILE_EXTENSION = ".markdown";
         private const string NO_DATA = "no data";
 
@@ -38,28 +36,18 @@ namespace UIWidgetsWiki
         protected override void Awake()
         {
             if (m_config == null) m_config = GetComponent<PanelConfig>();
-            Title = m_config?.Title;
             m_currentPath = Path.Combine(Application.streamingAssetsPath, "markdown/Town_World" + MARKDOWN__FILE_EXTENSION);
-            m_markdownStyleSheet = MarkdownStyleSheet.fromTheme(new ThemeData(textTheme:
-    new TextTheme(
-        display4: new TextStyle(fontSize: 40.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h1
-        display3: new TextStyle(fontSize: 36.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h2
-        display2: new TextStyle(fontSize: 32.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h3
-        display1: new TextStyle(fontSize: 28.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h4
-        headline: new TextStyle(fontSize: 24.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h5
-        title: new TextStyle(fontSize: 20.0f, fontWeight: Unity.UIWidgets.ui.FontWeight.bold), //h6
-        body1: new TextStyle(fontSize: 16.0f)
-        //            caption: new TextStyle(color: Colors.pink, fontSize: 8.0f),
-        //            button: new TextStyle(color: Colors.purple, fontSize: 8.0f),
-        //            overline: new TextStyle(color: Colors.red, fontSize: 8.0f)
-        )));
+
+            m_markdownStyleSheet = m_config.GetStyleSheet();
+
+            //m_appTheme = new ThemeData
 
             LoadPage(m_currentPath);
         }
 
         
 
-        private async void HandleTap(string url)
+        private void HandleTap(string url)
         {
             if (!HandleInternalLink(url))
                 HandleExternalLink(url);  
@@ -179,7 +167,7 @@ namespace UIWidgetsWiki
             return false;
         }
 
-        async void Back()
+        private void Back()
         {
             if (m_navHistory.Count > 0)
             {
@@ -196,14 +184,8 @@ namespace UIWidgetsWiki
         {
             if (!Application.isPlaying) return null;
 
-            //if (markdownData1 == NO_DATA)
-            //{
-            //    NavigateTo(Path.Combine(Application.streamingAssetsPath, "markdown/Town_World" + MARKDOWN__FILE_EXTENSION));
-            //    return null;
-            //}
-
             return new MaterialApp(
-                title: Title,
+                title: m_config.Title,
                 home: new Scaffold(
 
                     //app bar
@@ -213,7 +195,7 @@ namespace UIWidgetsWiki
                     body: new Markdown(data: markdownData1,
                     syntaxHighlighter: new DartSyntaxHighlighter(SyntaxHighlighterStyle.lightThemeStyle()),
                     onTapLink: HandleTap,
-                    imageDirectory: Path.GetDirectoryName(m_currentPath),
+                    imageDirectory: GetImageDir(),
                     styleSheet: m_markdownStyleSheet),
 
                     //footer
@@ -236,6 +218,11 @@ namespace UIWidgetsWiki
                             onPressed: () => Application.Quit()),
 
                     }));
+        }
+
+        private string GetImageDir()
+        {
+            return Path.GetDirectoryName(m_currentPath);
         }
     }
 }
