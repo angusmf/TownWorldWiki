@@ -427,7 +427,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9339623, g: 0.53306335, b: 0.8705761, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -464,6 +464,21 @@ MonoBehaviour:
   RegularFont: fonts/SF-Pro-Text-Regular
   SemiboldFont: fonts/SF-Pro-Text-Semibold
   BoldFont: fonts/SF-Pro-Text-Bold
+  WebRoot: https://twzwiki.angusmf.com
+  body_Size: 16
+  h1_Size: 40
+  h2_Size: 36
+  h3_Size: 32
+  h4_Size: 28
+  h5_Size: 24
+  h6_Size: 20
+  blockSpacing: 8
+  listIndent: 32
+  blockQuotePadding: 8
+  borderRadius: 2
+  primaryColor:
+    serializedVersion: 2
+    rgba: 4281574117
 --- !u!222 &1398879127
 CanvasRenderer:
   m_ObjectHideFlags: 0
