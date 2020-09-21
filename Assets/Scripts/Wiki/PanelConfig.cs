@@ -1,5 +1,5 @@
 ﻿using markdown;
-
+using System;
 using Unity.UIWidgets.material;
 using Unity.UIWidgets.painting;
 using Unity.UIWidgets.ui;
@@ -38,6 +38,22 @@ namespace UIWidgetsWiki
         public int borderRadius = 2;
 
         public Color32 primaryColor;
+        public Color32 linkColor;
+        public Color32 bodyColor;
+        public Color32 h1Color;
+        public Color32 h2Color;
+        public Color32 h3Color;
+        public Color32 h4Color;
+        public Color32 h5Color;
+        public Color32 h6Color;
+        public bool darkButtonColorSchem;
+        public Color32 mainButtonColor;
+        public Color32 buttonTextColor = new Color32(255, 255, 255, 255);
+        public Color32 codeColor;
+        public Color32 blockQuoteColor;
+        public Color32 codeBlockColor;
+        public Color32 hRuleColor;
+
 
         internal void LoadFonts()
         {
@@ -51,54 +67,44 @@ namespace UIWidgetsWiki
             FontManager.instance.addFont(Resources.Load<Font>(path: BoldFont), FontFamily, FontWeight.w700);
         }
 
-
-
-        public long ToHex(Color32 c)
+        public Unity.UIWidgets.ui.Color Color32ToUIWidgetsColor(Color32 c)
         {
-            return (c.a << 24) | (c.r << 16) | (c.g << 8) | (c.b);
+            return new Unity.UIWidgets.ui.Color((c.a < 1 ? c.a : 255 << 24) | (c.r << 16) | (c.g << 8) | (c.b));
+        }
+
+        private Unity.UIWidgets.ui.Color GetColor(Color32 c, Unity.UIWidgets.ui.Color defaultColor = null)
+        {
+            return (c.r > 0 || c.b > 0 || c.g > 0) && c.a > 0 ?
+                new Unity.UIWidgets.ui.Color((c.a < 1 ? c.a : 255 << 24) | (c.r << 16) | (c.g << 8) | (c.b)) : defaultColor;
         }
 
         internal ThemeData GetAppTheme()
         {
-            return new ThemeData(primaryColor: new Unity.UIWidgets.ui.Color(ToHex(primaryColor)), buttonTheme: GetButtonTheme());
+            return new ThemeData(primaryColor: GetColor(primaryColor), buttonTheme: GetButtonTheme());
         }
 
 
         private ButtonThemeData GetButtonTheme()
         {
-            return new ButtonThemeData(colorScheme: ColorScheme.light()
-                .copyWith(secondary: Colors.white));
+            return new ButtonThemeData(colorScheme: (darkButtonColorSchem ? ColorScheme.dark() : ColorScheme.light())
+                .copyWith(primary: GetColor(mainButtonColor), secondary: Colors.white));
         }
 
         internal MarkdownStyleSheet GetStyleSheet()
         {
-            var t = MarkdownStyleSheet.fromTheme(
-                new ThemeData(textTheme: new TextTheme(
-                    display4: new TextStyle(fontSize: h1_Size, fontWeight: FontWeight.bold), //h1
-                    display3: new TextStyle(fontSize: h2_Size, fontWeight: FontWeight.bold), //h2
-                    display2: new TextStyle(fontSize: h3_Size, fontWeight: FontWeight.bold), //h3
-                    display1: new TextStyle(fontSize: h4_Size, fontWeight: FontWeight.bold), //h4
-                    headline: new TextStyle(fontSize: h5_Size, fontWeight: FontWeight.bold), //h5
-                    title: new TextStyle(fontSize: h6_Size, fontWeight: FontWeight.bold), //h6
-                    body1: new TextStyle(fontSize: 16.0f)
-                //caption: new TextStyle(color: Colors.pink, fontSize: 8.0f),
-                //button: new TextStyle(color: Colors.purple, fontSize: 8.0f),
-                //overline: new TextStyle(color: Colors.red, fontSize: 8.0f)
-                )));
-
-
-            var body = new TextStyle(fontSize: body_Size);
+        
+            var body = new TextStyle(true, GetColor(bodyColor), fontSize: body_Size);
 
             var tt = new MarkdownStyleSheet(
-                new TextStyle(true, Colors.blue),
+                new TextStyle(true, GetColor(linkColor, Colors.blue)),
                 body,
-                new TextStyle(true, Colors.grey.shade700, fontSize: body.fontSize * .85f, fontFamily: "monospace"),
-                new TextStyle(fontSize: h1_Size, fontWeight: FontWeight.bold), //h1
-                new TextStyle(fontSize: h2_Size, fontWeight: FontWeight.bold), //h2
-                new TextStyle(fontSize: h3_Size, fontWeight: FontWeight.bold), //h3
-                new TextStyle(fontSize: h4_Size, fontWeight: FontWeight.bold), //h4
-                new TextStyle(fontSize: h5_Size, fontWeight: FontWeight.bold), //h5
-                new TextStyle(fontSize: h6_Size, fontWeight: FontWeight.bold), //h6
+                new TextStyle(true, GetColor(codeColor, Colors.grey.shade700), fontSize: body.fontSize * .85f, fontFamily: "monospace"),
+                new TextStyle(true, GetColor(h1Color), fontSize: h1_Size, fontWeight: FontWeight.bold), //h1
+                new TextStyle(true, GetColor(h2Color), fontSize: h2_Size, fontWeight: FontWeight.bold), //h2
+                new TextStyle(true, GetColor(h3Color), fontSize: h3_Size, fontWeight: FontWeight.bold), //h3
+                new TextStyle(true, GetColor(h4Color), fontSize: h4_Size, fontWeight: FontWeight.bold), //h4
+                new TextStyle(true, GetColor(h5Color), fontSize: h5_Size, fontWeight: FontWeight.bold), //h5
+                new TextStyle(true, GetColor(h6Color), fontSize: h6_Size, fontWeight: FontWeight.bold), //h6
                 new TextStyle(true, fontStyle: Unity.UIWidgets.ui.FontStyle.italic),
                 new TextStyle(true, fontWeight: FontWeight.bold),
                 body,
@@ -106,15 +112,17 @@ namespace UIWidgetsWiki
                 blockSpacing,
                 listIndent,
                 blockQuotePadding,
-                new BoxDecoration(null, null, null, BorderRadius.circular(borderRadius), null, null, null),
+                new BoxDecoration(GetColor(blockQuoteColor), null, null, BorderRadius.circular(borderRadius), null, null, null),
                 8,
-                new BoxDecoration(Colors.grey.shade100, null, null, BorderRadius.circular(borderRadius), null, null, null),
+                new BoxDecoration(GetColor(codeBlockColor, Colors.grey.shade100), null, null, BorderRadius.circular(borderRadius), null, null, null),
                 new BoxDecoration(null, null, new Border(
-                    new BorderSide(Colors.grey.shade300, 5)))
+                    new BorderSide(GetColor(hRuleColor, Colors.grey.shade300), 5)))
             );
 
 
             return tt;
         }
+
+
     }
 }

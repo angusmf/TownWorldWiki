@@ -478,7 +478,50 @@ MonoBehaviour:
   borderRadius: 2
   primaryColor:
     serializedVersion: 2
-    rgba: 4281574117
+    rgba: 4293210960
+  linkColor:
+    serializedVersion: 2
+    rgba: 4291559543
+  bodyColor:
+    serializedVersion: 2
+    rgba: 4294267490
+  h1Color:
+    serializedVersion: 2
+    rgba: 4285806565
+  h2Color:
+    serializedVersion: 2
+    rgba: 4291937793
+  h3Color:
+    serializedVersion: 2
+    rgba: 0
+  h4Color:
+    serializedVersion: 2
+    rgba: 0
+  h5Color:
+    serializedVersion: 2
+    rgba: 0
+  h6Color:
+    serializedVersion: 2
+    rgba: 0
+  darkButtonColorSchem: 0
+  mainButtonColor:
+    serializedVersion: 2
+    rgba: 3863293
+  buttonTextColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  codeColor:
+    serializedVersion: 2
+    rgba: 0
+  blockQuoteColor:
+    serializedVersion: 2
+    rgba: 0
+  codeBlockColor:
+    serializedVersion: 2
+    rgba: 0
+  hRuleColor:
+    serializedVersion: 2
+    rgba: 4285530235
 --- !u!222 &1398879127
 CanvasRenderer:
   m_ObjectHideFlags: 0
