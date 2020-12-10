@@ -117,7 +117,7 @@ build-StandaloneWindows64:
 
 build-WebGL:
   <<: *build
-  image: gableroux/unity3d:2020.1.4f1-webgl
+  image: gableroux/unity3d:2020.1.13f1-webgl
   variables:
     BUILD_TARGET: WebGL  
 
