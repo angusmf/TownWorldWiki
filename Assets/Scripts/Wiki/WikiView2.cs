@@ -6,7 +6,6 @@ using Unity.UIWidgets.engine;
 using Unity.UIWidgets.material;
 using Unity.UIWidgets.widgets;
 
-
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -198,13 +197,12 @@ namespace UIWidgetsWiki
                             icon: new Icon(Icons.arrow_back),
                             label: new Text("BACK"),
                             onPressed: Back),
-
-
+#if !UNITY_WEBGL
                         RaisedButton.icon(
                             icon: new Icon(Icons.power),
                             label: new Text("QUIT"),
                             onPressed: () => Application.Quit()),
-
+#endif
                     }));
         }
 

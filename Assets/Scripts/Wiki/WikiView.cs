@@ -10,16 +10,12 @@ using Unity.UIWidgets.painting;
 using System;
 using System.IO;
 using System.Collections.Generic;
-using UnityEngine.Networking;
-
-using Cysharp.Threading.Tasks;
 
 
 namespace UIWidgetsWiki
 {
     public class WikiView : UIWidgetsPanel
     {
-        public bool live;
 
         private const string MARKDOWN__FILE_EXTENSION = ".markdown";
         private const string NO_DATA = "no data";
@@ -202,19 +198,18 @@ namespace UIWidgetsWiki
                     persistentFooterButtons: new List<Widget>()
                     {
                         RaisedButton.icon(
-                            icon: new Icon(Icons.home, size: 18.0f, color: Colors.white),
-                            label: new Text("HOME", style: new TextStyle(true, color: Colors.white)),
+                            icon: new Icon(Icons.home),
+                            label: new Text("HOME"),
                             onPressed: Home),
 
                         RaisedButton.icon(
-                            icon: new Icon(Icons.arrow_back, size: 18.0f, color: Colors.white),
-                            label: new Text("BACK", style: new TextStyle(true, color: Colors.white)),
+                            icon: new Icon(Icons.arrow_back),
+                            label: new Text("BACK"),
                             onPressed: Back),
 
-
                         RaisedButton.icon(
-                            icon: new Icon(Icons.power, size: 18.0f, color: Colors.white),
-                            label: new Text("QUIT", style: new TextStyle(true, color: Colors.white)),
+                            icon: new Icon(Icons.power),
+                            label: new Text("QUIT"),
                             onPressed: () => Application.Quit()),
 
                     }));
