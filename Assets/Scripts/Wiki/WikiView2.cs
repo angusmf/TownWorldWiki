@@ -208,8 +208,7 @@ namespace UIWidgetsWiki
 
         private string GetImageDir()
         {
-            return m_config.WebRoot;
+            return new Uri(m_currentPath, ".").ToString();
         }
-
     }
 }
